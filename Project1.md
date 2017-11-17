@@ -21,7 +21,6 @@
   job的输出结果为所有<word,frequency>对，输出路径为程序固定路径；job1的输出结果为当frequency大于等于k时的<frequency，word>对，输出路径为path2。在job1中进行词频阈值处理。  
   源程序如下：    
   ```
-  
   package project;
 
 import java.io.IOException;
