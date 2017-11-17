@@ -159,7 +159,7 @@ public class Project {
 ```
 #### 2.2实验结果说明
 &emsp;&emsp;由于job没有对阈值进行处理，所以输出结果是所有的<word,frequency>对。  
-&emsp;&emsp;job结果的前五行数据如下  
+job结果的前五行数据如下  
 ```
 28274	公告
 21477	股份
@@ -167,7 +167,7 @@ public class Project {
 12138	公司
 9107	上市公司
 ```
-&emsp;&emsp;最后五行数据如下
+最后五行数据如下
 ```
 1	天职
 1	天翼
@@ -176,7 +176,7 @@ public class Project {
 1	悍马
 ```
 &emsp;&emsp;在job1中对阈值进行了处理，使得只有当frequency大于等于kvalue值时才会输出<frequency,word>对。  
-&emsp;&emsp;job1结果的前五行数据如下（与job相同）  
+job1结果的前五行数据如下（与job相同）  
 ```
 28275	公告
 21575	股份
@@ -184,7 +184,7 @@ public class Project {
 12179	公司
 9163	上市公司
 ```
-&emsp;&emsp;最后五行数据如下（假定kvalue值为100）
+最后五行数据如下（假定kvalue值为100）
 ```
 100	中药
 100	迎风
