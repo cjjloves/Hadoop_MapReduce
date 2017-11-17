@@ -334,8 +334,26 @@ public class Project3 {
 ```
 ### 3.程序的不足与可能的改进之处
 #### 3.1程序的不足
-程序性能方面的不足在于其reduce阶段，由于reduce阶段的工作是将多个URL值进行合并，所以当一个词语出现了几千次的时候需要进行几千次循环来进行URL值合并，这种合并在该程序中是串行实现的，占据了程序的大量处理时间。  
+程序性能方面的不足在于其reduce阶段，由于reduce阶段的工作是将多个URL值进行合并，所以当一个词语出现了几千次的时候需要进行几千次循环来进行URL值合并，这种合并在该程序中是串行实现的，占据了程序的大量处理时间。  
 程序扩展性的不足在于不能适应不同结构的数据需求（与需求1相同，不再赘述）。另外，其不足还在于程序会根据hanlp中给定的词典将特定字符视为词语（如实验结果中的前五行数据），而这些字符很可能是我们所不希望看到的。
 #### 3.2程序可能改进指处
-对于程序reduce阶段合并URL值只能串行进行的问题，合理的解决方法是自定义partitioner，如果一个词语相关联的URL值过多，则将该URL串进行划分，然后分别传到不同的节点上进行处理。然后再增加一个job，其reducer类用于合并相同词语的URL串。  
+对于程序reduce阶段合并URL值只能串行进行的问题，合理的解决方法是自定义partitioner，如果一个词语相关联的URL值过多，则将该URL串进行划分，然后分别传到不同的节点上进行处理。然后再增加一个job，其reducer类用于合并相同词语的URL串。  
 对于程序扩展性不足的问题，最简单的方法是在停词表中写入不希望看到的特定字符或词语，但这种方法较为繁琐。
+## 补充
+### 1.配置说明
+#### 1.1eclipse安装hadoop插件说明
+需要从网上下载hadoop-eclipse-plugin-1.1.2.jar，并将其拷贝到 eclipse的plugins目录。然后创建Map/Reduce Project,配置端口信息，其中端口号需要与core-site.xml中的端口号保持一致。程序编写完毕后，需要对Run Configurations的Arguments进行输入参数配置，即可运行。安装hadoop插件的好处是，无需在创建项目后在添加关于hadoop的jar包，能够直接在eclipse运行hadoop程序并得到结果。  
+参考网站：https://www.cnblogs.com/shishanyuan/p/4178732.html
+#### 1.2hanlp分词插件说明
+使用hanlp插件，需要添加关于hanlp的jar包（本程序添加的是hanlp-1.2.8.jar），还需要引入data文件夹和hanlp.properties配置文件，其中，能通过在data/dictionary/custom添加分词表来实现添加自定义分词表的功能，同时能够在data/dictionary/stopwords.txt中增加停词。hanlp.properties配置文件需要放入所创建的project下的bin文件夹中，其内容中的root路径指向data所在文件夹，能够在CustomDictionaryPath路径中添加自定义分词文档。
+hanlp分词插件配置参考网站：http://blog.csdn.net/a_step_further/article/details/50333961  
+本程序使用的是该网站中的第二种方法。  
+该分词插件无法使用自定义词典作为唯一分词词典，原因是其核心词典的分词结构为【词语】【词性A】【A的频次】【词性B】【B的频次】，而自定义词典中只包含词语，所以如果用自定义词典代替hanlp插件的核心词典的话，会因为没有词性和频次等属性而出错。但能够直接用特定的停词表作为唯一停词表，原因是停词表的结构只包含词语。
+hanlp分词插件详情参考网站：http://hanlp.linrunsoft.com/doc/_build/html/dictionary.html
+### 2.程序问题发现
+#### 2.1需求1词频阈值处理问题
+当把词频阈值处理放在第一个job的reduce阶段时，整个程序无法输出正确的结果。原因可能是具有相同词语的<word,one>对被分配到不同的reduce结点中，最后才进行结点的词频合并，以减少处理时间。所以，词频阈值处理需要放到第二个job的map阶段，这是只需要判断frequency与阈值的大小即可。  
+#### 2.1需求2URL合并问题
+在需求2中，需要将combiner的参数设置为reducer类，否则reducer无法得到输入数据<word,[URL1,URL2,......]>。  
+Combiner参数设置理论参考网站：https://zhidao.baidu.com/question/1959117107842078420.html  
+在设置了combiner参数之后，如果不对合并的URL数进行阈值限定，仍然无法正常运行程序。这个问题可能不是发生URL合并赋值阶段，因为通过try、catch方法并没有出现报错。
