@@ -19,4 +19,156 @@
 #### 2.1程序运行说明
   程序需要获取三个参数，分别为path1、path2和k,其中，path1为所用数据集fulldata.txt所在路径，path2为最终结果输出路径，k为词频阈值，若词频大于等于k，则输出，否则不输出。另外，中间数据的输出路径(即job的输出、job1的输入路径)在程序中已设定为固定路径，不再从键盘获取。  
   job的输出结果为所有<word,frequency>对，输出路径为程序固定路径；job1的输出结果为当frequency大于等于k时的<frequency，word>对，输出路径为path2。在job1中进行词频阈值处理。  
+  源程序如下：    
+  ```
+  
+  package project;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.GenericOptionsParser;
+
+
+import com.hankcs.hanlp.HanLP;
+import com.hankcs.hanlp.dictionary.stopword.CoreStopWordDictionary;
+import com.hankcs.hanlp.seg.Segment;
+import com.hankcs.hanlp.seg.common.Term;
+
+public class Project {
+	public static class TokenizerMapper //定义Map类实现字符串分解
+	extends Mapper<Object, Text, Text, IntWritable>
+	{
+	private final static IntWritable one = new IntWritable(1);
+	private Text word = new Text();
+	public void map(Object key, Text value, Context context)
+	//public void map()
+	throws IOException, InterruptedException
+	{ //将字符串拆解成单词
+	//String[] gettitle = value.toString().split("  ");
+		String[] gettitle = value.toString().split("\t");
+		for(int i=4;i<gettitle.length-1;i++){
+			String sentence =gettitle[i];
+	Segment segment = HanLP.newSegment().enablePartOfSpeechTagging(false); 
+	List<Term> segWords = segment.seg(sentence); 
+	CoreStopWordDictionary.apply(segWords); 
+	
+	for (int i1 = 0; i1 < segWords.size(); i1++) {  
+		word.set(segWords.get(i1).toString());
+		context.write(word,one);
+        //System.out.println(segWords.get(i));  
+    }  
+		}
+	
+	}
+	}
+	
+	//定义Reduce类规约同一key的value
+	public static class IntSumReducer extends Reducer<Text,IntWritable,Text,IntWritable>
+	{
+	private IntWritable result = new IntWritable();
+	//实现reduce()函数
+	public void reduce(Text key, Iterable<IntWritable> values, Context context )
+	throws IOException, InterruptedException
+	{
+	int sum = 0;
+	//遍历迭代器values，得到同一key的所有value
+	for (IntWritable val : values) { sum += val.get(); }
+	result.set(sum);
+	context.write(key, result);
+	}
+	}
+	
+	public static class SortMapper //定义Map类实现字符串分解
+	extends Mapper<Object, Text, IntWritable,Text>
+	{
+			private int num;
+			private IntWritable frequency= new IntWritable();
+			private Text words=new Text();
+			protected void setup(Context context) throws IOException,InterruptedException{
+				num = context.getConfiguration().getInt("kvalue", 0);
+			}
+			public void map(Object key,Text value, Context context)
+					throws IOException, InterruptedException{
+				String[] line=value.toString().split("\t");
+				int fre = Integer.parseInt(line[1]);
+				frequency.set(fre);
+				words.set(line[0]);
+				//System.out.println(num);
+				if(fre>=num)
+				context.write (frequency,words);
+			}
+	} 
+	
+	
+	public class SortReducer extends Reducer<IntWritable, Text, Text, IntWritable> {
+	    protected void reduce(IntWritable key, Iterable<Text> values,Context context)throws IOException, InterruptedException {
+	        for(Text value : values){
+	            context.write(value, key);
+	        }
+	    }
+	}
+	 private static class IntWritableDecreasingComparator extends IntWritable.Comparator {
+
+	     public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
+	                return -super.compare(b1, s1, l1, b2, s2, l2);
+	       }
+	}
+	
+	
+	public static void main(String[] args) throws Exception
+	{
+	Configuration conf = new Configuration();
+	String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
+	if (otherArgs.length != 3)
+	{ System.err.println("Usage: wordcount <in> <out> <k value>");
+	System.exit(3);
+	}
+	Job job = Job.getInstance();
+	job.setJobName("wordcount");
+	job.setJarByClass(Project.class);//设置执行任务的jar
+	job.setMapperClass(TokenizerMapper.class); 
+	job.setCombinerClass(IntSumReducer.class); //设置Combine类
+	job.setReducerClass(IntSumReducer.class); //设置Reducer类
+	job.setOutputKeyClass(Text.class); //设置job输出的key
+	//设置job输出的value
+	job.setOutputValueClass(IntWritable.class);
+	//设置输入文件的路径
+	FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
+	FileOutputFormat.setOutputPath(job, new Path("/home/u2/hadoop_installs/hadoop-2.7.4/outputpro2"));
+	
+	Job job1 = Job.getInstance();
+	job1.setJobName("sort");
+	job1.getConfiguration().setInt("kvalue", Integer.parseInt(args[2]));
+	job1.setJarByClass(Project.class);//设置执行任务的jar
+	job1.setMapperClass(SortMapper.class);
+	//job.setCombinerClass(IntSumReducer.class); //设置Combine类
+	//job.setReducerClass(IntSumReducer.class); //设置Reducer类
+	job1.setOutputKeyClass(IntWritable.class); //设置job输出的key
+	//设置job输出的value
+	job1.setOutputValueClass(Text.class);
+	//设置输入文件的路径
+	job1.setSortComparatorClass(IntWritableDecreasingComparator.class);//从大到小排序
+	FileInputFormat.addInputPath(job1, new Path("/home/u2/hadoop_installs/hadoop-2.7.4/outputpro2"));
+	//设置输出文件的路径
+	FileOutputFormat.setOutputPath(job1, new Path(otherArgs[1]));
+	//提交任务并等待任务完成*/
+	if (job.waitForCompletion(true)) {
+	System.exit(job1.waitForCompletion(true) ? 0 : 1); }
+	//System.exit(job.waitForCompletion(true) ? 0 : 1);
+	
+	}
+	
+}
+
+  ```
 #### 2.2
