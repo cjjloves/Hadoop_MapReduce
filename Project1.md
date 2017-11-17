@@ -8,7 +8,7 @@
 在job的mapper类中，需要完成获取行数据标题、将标题进行分词的任务并输出<word,one>对。在其mapper类中，需要完成词频统计任务并输出<word,frequency>对。  
 在job1中，其mapper将读取job输出的<word,frequency>对，将word和frequency交换位置，形成<frequency,word>对，并通过自定义mapper的排列类，按词频从大到小进行排列并输出。job1中没有mapper类。
 #### 1.2算法设计及程序说明：
-  在job中，其mapper类将读取fulldata.txt中的每一行数据，通过分隔符\t将行数据进行分段，取其中的第五段至倒数第二段数据作为标题内容进行分词（适应fulldata.txt数据结构）。分词的具体做法是，先建立一个分词器，然后将标题段放入分词器中进行分词，得到一个List<Term>类型的数据，将该数据进行停词过滤。分词停词阶段完成后，对得到的List<Term>类型类型数据进行for循环，每一次循环取出一个词语赋给word，并输出<word,one>对。通过默认的combiner类，mapper类将得到的输入结果<word,[one,one,one,......,one]>对value值进行累加，最终得到<word,frequency>对并输出到指定目录上。  
+  在job中，其mapper类将读取fulldata.txt中的每一行数据，通过分隔符\t将行数据进行分段，取其中的第五段至倒数第二段数据作为标题内容进行分词（适应fulldata.txt数据结构）。分词的具体做法是，先建立一个分词器，然后将标题段放入分词器中进行分词，得到一个List<Term>类型的数据，将该数据进行停词过滤。分词停词阶段完成后，对得到的List<Term>类型类型数据进行for循环，每一次循环取出一个词语赋给word，并输出<word,one>对。通过默认的combiner类，reducer类将得到的输入结果<word,[one,one,one,......,one]>对value值进行累加，最终得到<word,frequency>对并输出到指定目录上。  
   在job完成后，job1将job的输出作为输入，将行数据通过分隔符\t分段，第一段为word值，第二段为frequency值，然后将两个值进行存储。同时，建立setup（）类来得到从键盘中输入的词频阈值kvalue，将frequency与kvalue作比较，若frequency大于等于kvalue，则输出<frequency,word>对；否则不输出。最后，通过内置-super.compare（）函数对frequency进行比较，实现按照词频从大到小排序并输出。  
 #### 1.3类说明：
   TokenizerMapper类：job中的mapper类，输入类型为<IntWritable,Text>,输出类型为<Text,IntWritable>。  
@@ -158,7 +158,7 @@ public class Project {
 }
 ```
 #### 2.2实验结果说明
-由于job没有对阈值进行处理，所以输出结果是所有的<word,frequency>对。  
+由于job没有对阈值进行处理，所以输出结果是所有的<word,frequency>对。   
 job结果的前五行数据如下  
 ```
 28274	公告
@@ -175,3 +175,46 @@ job结果的前五行数据如下  
 1	天网
 1	悍马
 ```
+在job1中对阈值进行了处理，使得只有当frequency大于等于kvalue值时才会输出<frequency,word>对。  
+job1结果的前五行数据如下（与job相同）  
+```
+28275	公告
+21575	股份
+18811	有限公司
+12179	公司
+9163	上市公司
+```
+最后五行数据如下（假定kvalue值为100）
+```
+100	中药
+100	迎风
+100	单车
+100	力度
+100	年薪
+```
+### 3.程序的不足与可能的改进之处
+#### 3.1程序的不足
+程序性能方面的不足在于程序无法只根据特定的分词表进行分词。该程序基于hanpl插件(补充中详细说明)进行分词，所用的词典为hanlp插件提供的词典，自定义词典只能作为一种补充，而无法作为分词所依赖的唯一词典。另外，程序性能方面的不足还表现在对download_data文件夹中的文档进行处理时所需要的时间非常长（这个程序处理download_data文件夹所需要的时间大概为6分钟），而处理fulldata.txt则非常快速（大概需要20秒左右）。不过，这可能是hadoop自身的问题，而与程序无关。  
+程序扩展性的不足在于对初始数据的处理中获取标题段的阶段，由于不同的数据的数据结构可能不同，所以采用\t分隔符对行数据进行分段，并且取第五段至倒数第二段为标题段的方法可能无法适用于所有需要处理的数据。
+#### 3.2程序可能改进指出
+对于程序无法只根据特定分词表进行分词的问题，可能的解决方法是对特定分词表进行修改，使得该特定分词表的数据结构与hanlp插件提供的词典的数据结构相同，然后用该特的分词表替代hanlp插件提供的词典。特定分词表中的数据只有词语，而hanlp插件提供的词典中数据格式为词语、词性和频次。比较合理的解决方法是模仿hanlp插件的源代码，自己实现一个分词插件程序。  
+对于程序扩展性不足的问题，比较合理的解决方法是规定处理数据的数据结构，免去多次修改程序的烦恼。
+
+## 需求2：对词语进行带URL属性的文档倒排索引
+### 1.程序设计说明：
+#### 1.1设计思路：
+  需求2需要完成的子任务包括：截取文本文档中的每一行数据中的标题部分与URL部分、将标题进行分词、对同一词语相关联的URL值进行合并。  
+为此，只需要建立一个ob，在该job中，其mapper将读取行数据，通过分隔符\t取得标题段并将标题分词（该过程与需求1中的相同），取最后一段数据作为URL段，并输出<word,URL>对。该job的reducer通过combiner得到输入<word,[URL1,URL2,...]>,将前k(程序固定值)个URL值合并到Text中，最后输出<word,Text>对。
+#### 1.2算法设计及程序说明：
+  在job中，其mapper类先对数据进行分词（分词过程与需求1相同，不再赘述），然后取最后一段为URL值（适应fulldata.txt数据结构），分别对word和URL进行赋值，输出<word,URL>对。reducer类首先设定一个阈值count,将得到的输入结果<word,[URL1,URL2,......]>对value值进行累加，最终得到<word,frequency>对并输出到指定目录上。  
+  在job完成后，job1将job的输出作为输入，将行数据通过分隔符\t分段，第一段为word值，第二段为frequency值，然后将两个值进行存储。同时，建立setup（）类来得到从键盘中输入的词频阈值kvalue，将frequency与kvalue作比较，若frequency大于等于kvalue，则输出<frequency,word>对；否则不输出。最后，通过内置-super.compare（）函数对frequency进行比较，实现按照词频从大到小排序并输出。  
+#### 1.3类说明：
+  TokenizerMapper类：job中的mapper类，输入类型为<IntWritable,Text>,输出类型为<Text,IntWritable>。  
+  IntSumReducer类：job中的combiner类（setCombinerClass（）的参数直接使用改reduce，用于防止map生成数据过大而无法传输的问题）。job中的reducer类，输入类型为<Text,[IntWritable,IntWritable,......]>,输出类型为<Text,IntWritable>。  
+  SortMapper类：job1中的mapper类，输入类型为<IntWritable,Text>,输出类型为<IntWritable,Text>。  
+  IntWritableDecreasingComparator类：job1的map中对key值进行排序的类。  
+### 2.程序运行和实验结果
+#### 2.1程序运行说明
+  程序需要获取三个参数，分别为path1、path2和k,其中，path1为所用数据集fulldata.txt所在路径，path2为最终结果输出路径，k为词频阈值，若词频大于等于k，则输出，否则不输出。另外，中间数据的输出路径(即job的输出、job1的输入路径)在程序中已设定为固定路径，不再从键盘获取。  
+  job的输出结果为所有<word,frequency>对，输出路径为程序固定路径；job1的输出结果为当frequency大于等于k时的<frequency，word>对，输出路径为path2。在job1中进行词频阈值处理。    
+  源程序如下：
