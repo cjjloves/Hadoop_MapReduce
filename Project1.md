@@ -18,7 +18,7 @@
 ### 2.程序运行和实验结果
 #### 2.1程序运行说明
   程序需要获取三个参数，分别为path1、path2和k,其中，path1为所用数据集fulldata.txt所在路径，path2为最终结果输出路径，k为词频阈值，若词频大于等于k，则输出，否则不输出。另外，中间数据的输出路径(即job的输出、job1的输入路径)在程序中已设定为固定路径，不再从键盘获取。  
-  job的输出结果为所有<word,frequency>对，输出路径为程序固定路径；job1的输出结果为当frequency大于等于k时的<frequency，word>对，输出路径为path2。在job1中进行词频阈值处理。  
+  job的输出结果为所有<word,frequency>对，输出路径为程序固定路径；job1的输出结果为当frequency大于等于k时的<frequency，word>对，输出路径为path2。在job1中进行词频阈值处理。    
   源程序如下：    
 	
 ```
@@ -61,8 +61,8 @@ public class Project {
 		word.set(segWords.get(i1).toString());
 		context.write(word,one);
         //System.out.println(segWords.get(i));  
-    }  
-		}
+        }  
+	}
 	
 	}
 	}
@@ -103,15 +103,7 @@ public class Project {
 				context.write (frequency,words);
 			}
 	} 
-	
-	
-	public class SortReducer extends Reducer<IntWritable, Text, Text, IntWritable> {
-	    protected void reduce(IntWritable key, Iterable<Text> values,Context context)throws IOException, InterruptedException {
-	        for(Text value : values){
-	            context.write(value, key);
-	        }
-	    }
-	}
+
 	 private static class IntWritableDecreasingComparator extends IntWritable.Comparator {
 
 	     public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
@@ -165,4 +157,21 @@ public class Project {
 	
 }
 ```
-#### 2.2
+#### 2.2实验结果说明
+由于job没有对阈值进行处理，所以输出结果是所有的<word,frequency>对。  
+job结果的前五行数据如下  
+```
+28274	公告
+21477	股份
+18811	有限公司
+12138	公司
+9107	上市公司
+```
+最后五行数据如下
+```
+1	天职
+1	天翼
+1	贾文军
+1	天网
+1	悍马
+```
