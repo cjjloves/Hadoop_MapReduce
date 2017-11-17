@@ -20,7 +20,8 @@
   程序需要获取三个参数，分别为path1、path2和k,其中，path1为所用数据集fulldata.txt所在路径，path2为最终结果输出路径，k为词频阈值，若词频大于等于k，则输出，否则不输出。另外，中间数据的输出路径(即job的输出、job1的输入路径)在程序中已设定为固定路径，不再从键盘获取。  
   job的输出结果为所有<word,frequency>对，输出路径为程序固定路径；job1的输出结果为当frequency大于等于k时的<frequency，word>对，输出路径为path2。在job1中进行词频阈值处理。  
   源程序如下：    
-    
+	
+```
 package project;
 import java.io.IOException;
 import java.util.List;
@@ -38,7 +39,6 @@ import com.hankcs.hanlp.HanLP;
 import com.hankcs.hanlp.dictionary.stopword.CoreStopWordDictionary;
 import com.hankcs.hanlp.seg.Segment;
 import com.hankcs.hanlp.seg.common.Term;
-```
 public class Project {
 	public static class TokenizerMapper //定义Map类实现字符串分解
 	extends Mapper<Object, Text, Text, IntWritable>
@@ -164,5 +164,5 @@ public class Project {
 	}
 	
 }
-
+```
 #### 2.2
