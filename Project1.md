@@ -196,7 +196,7 @@ job1结果的前五行数据如下（与job相同）  
 #### 3.1程序的不足
 程序性能方面的不足在于程序无法只根据特定的分词表进行分词。该程序基于hanpl插件(补充中详细说明)进行分词，所用的词典为hanlp插件提供的词典，自定义词典只能作为一种补充，而无法作为分词所依赖的唯一词典。另外，程序性能方面的不足还表现在对download_data文件夹中的文档进行处理时所需要的时间非常长（这个程序处理download_data文件夹所需要的时间大概为6分钟），而处理fulldata.txt则非常快速（大概需要20秒左右）。不过，这可能是hadoop自身的问题，而与程序无关。  
 程序扩展性的不足在于对初始数据的处理中获取标题段的阶段，由于不同的数据的数据结构可能不同，所以采用\t分隔符对行数据进行分段，并且取第五段至倒数第二段为标题段的方法可能无法适用于所有需要处理的数据。
-#### 3.2程序可能改进指出
+#### 3.2程序可能改进指处
 对于程序无法只根据特定分词表进行分词的问题，可能的解决方法是对特定分词表进行修改，使得该特定分词表的数据结构与hanlp插件提供的词典的数据结构相同，然后用该特的分词表替代hanlp插件提供的词典。特定分词表中的数据只有词语，而hanlp插件提供的词典中数据格式为词语、词性和频次。比较合理的解决方法是模仿hanlp插件的源代码，自己实现一个分词插件程序。  
 对于程序扩展性不足的问题，比较合理的解决方法是规定处理数据的数据结构，免去多次修改程序的烦恼。
 
@@ -213,7 +213,7 @@ job1结果的前五行数据如下（与job相同）  
 ### 2.程序运行和实验结果
 #### 2.1程序运行说明
   程序需要获取两个参数，分别为path1、path2,其中，path1为所用数据集fulldata.txt所在路径，path2为最终结果输出路径。 
-  job的输出结果为所有<word,Text>对，输出路径为path2。其中，Text为与词语相关联的前count个URL值的合并。    
+  job的输出结果为所有<word,Text>对，输出路径为path2。其中，Text为与词语相关联的前count个URL值的合并。  
   源程序如下：
 ```
 package project3;
@@ -315,5 +315,27 @@ public class Project3 {
 }
 ```
 #### 2.2实验结果说明
-由于设置了阈值count，所以输出<word,URLs>对中最多包含count个URL
-假定count值为
+由于设置了阈值count，所以输出<word,URLs>对中最多包含count个URL。  
+假定count值为10，则输出结果前五行数据如下（数据说明：以下输出中的符号在hanlp插件给定词典中均有包括，但在特定停词表没有包括，所以输出的词语中存在特殊符号）
+```
+%-	http://finance.sina.com.cn/stock/t/2017-01-06/doc-ifxzkfvn0640228.shtml;http://finance.sina.com.cn/stock/s/2017-03-13/doc-ifychavf2639718.shtml;http://finance.sina.com.cn/roll/2017-01-10/doc-ifxzkfvn1215778.shtml;http://finance.sina.com.cn/stock/t/2017-07-26/doc-ifyihrwk2551543.shtml;http://finance.sina.com.cn/stock/t/2017-05-24/doc-ifyfkqwe0968988.shtml;http://finance.sina.com.cn/stock/t/2017-06-26/doc-ifyhmpew3498837.shtml;http://finance.sina.com.cn/stock/t/2017-04-05/doc-ifyeayzu6826764.shtml;http://finance.sina.com.cn/stock/t/2017-01-15/doc-ifxzqnva3639896.shtml;http://finance.sina.com.cn/stock/t/2017-07-06/doc-ifyhwefp0187054.shtml
+%--	http://finance.sina.com.cn/stock/t/2017-06-23/doc-ifyhmtrw3753415.shtml;http://finance.sina.com.cn/stock/t/2017-07-06/doc-ifyhweua4140597.shtml;http://finance.sina.com.cn/roll/2016-09-26/doc-ifxwermp3935274.shtml
+%H	http://finance.sina.com.cn/stock/hkstock/marketalerts/2017-08-03/doc-ifyitamv4688698.shtml
+%ST	http://finance.sina.com.cn/roll/2017-08-01/doc-ifyinryq7371215.shtml;http://finance.sina.com.cn/roll/2017-08-01/doc-ifyinryq7371215.shtml;http://finance.sina.com.cn/roll/2017-08-01/doc-ifyinryq7371215.shtml
+%~	http://finance.sina.com.cn/stock/t/2017-01-25/doc-ifxzutkf2624237.shtml
+```
+输出结果的最后五行数据如下：
+```
+龙韵	http://finance.sina.com.cn/roll/2016-04-13/doc-ifxrcuyk2863171.shtml;http://finance.sina.com.cn/stock/t/2016-03-31/doc-ifxqxcnr5090532.shtml;http://finance.sina.com.cn/stock/t/2016-04-13/doc-ifxrcizu4148645.shtml;http://finance.sina.com.cn/roll/2016-04-13/doc-ifxrcizu4152778.shtml;http://finance.sina.com.cn/roll/2016-04-26/doc-ifxrprek3460148.shtml;http://finance.sina.com.cn/roll/2016-05-10/doc-ifxryahs0652498.shtml;http://finance.sina.com.cn/roll/2016-05-25/doc-ifxsqtya6051109.shtml;http://finance.sina.com.cn/stock/t/2016-06-06/doc-ifxsuypf5077425.shtml;http://finance.sina.com.cn/stock/t/2016-06-06/doc-ifxsuypf5082817.shtml
+龙马	http://finance.sina.com.cn/stock/s/2017-07-03/doc-ifyhryex5872774.shtml;http://finance.sina.com.cn/stock/s/2017-07-03/doc-ifyhryex5872774.shtml;http://finance.sina.com.cn/roll/2016-09-29/doc-ifxwmamz0019802.shtml;http://finance.sina.com.cn/stock/s/2017-07-03/doc-ifyhryex5872774.shtml;http://finance.sina.com.cn/stock/t/2017-01-19/doc-ifxzunxf1419082.shtml;http://finance.sina.com.cn/stock/t/2016-09-27/doc-ifxwevww1699844.shtml;http://finance.sina.com.cn/stock/t/2017-03-24/doc-ifycsukm3511890.shtml;http://cj.sina.com.cn/article/detail/5160876646/200146;http://finance.sina.com.cn/stock/t/2017-04-06/doc-ifyecfnu7420109.shtml
+龚昕	http://finance.sina.com.cn/stock/t/2017-06-29/doc-ifyhrxtp6303641.shtml
+龚曙光	http://finance.sina.com.cn/roll/2016-08-26/doc-ifxvitex8981146.shtml
+龚虹嘉	http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml;http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml;http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml;http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml;http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml;http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml;http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml;http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml;http://finance.sina.com.cn/roll/2017-05-03/doc-ifyetxec7367838.shtml
+```
+### 3.程序的不足与可能的改进之处
+#### 3.1程序的不足
+程序性能方面的不足在于其reduce阶段，由于reduce阶段的工作是将多个URL值进行合并，所以当一个词语出现了几千次的时候需要进行几千次循环来进行URL值合并，这种合并在该程序中是串行实现的，占据了程序的大量处理时间。  
+程序扩展性的不足在于不能适应不同结构的数据需求（与需求1相同，不再赘述）。另外，其不足还在于程序会根据hanlp中给定的词典将特定字符视为词语（如实验结果中的前五行数据），而这些字符很可能是我们所不希望看到的。
+#### 3.2程序可能改进指处
+对于程序reduce阶段合并URL值只能串行进行的问题，合理的解决方法是自定义partitioner，如果一个词语相关联的URL值过多，则将该URL串进行划分，然后分别传到不同的节点上进行处理。然后再增加一个job，其reducer类用于合并相同词语的URL串。  
+对于程序扩展性不足的问题，最简单的方法是在停词表中写入不希望看到的特定字符或词语，但这种方法较为繁琐。
