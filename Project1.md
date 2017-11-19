@@ -353,7 +353,9 @@ public class Project3 {
 ### 2.程序问题发现
 #### 2.1需求1词频阈值处理问题
 &emsp;&emsp;当把词频阈值处理放在第一个job的reduce阶段时，整个程序无法输出正确的结果。原因可能是具有相同词语的<word,one>对被分配到不同的reduce结点中，最后才进行结点的词频合并，以减少处理时间，这种处理方式跟我之前想的不同。所以，词频阈值处理需要放到第二个job的map阶段，这是只需要判断frequency与阈值的大小即可。  
-#### 2.1需求2的URL合并问题
+#### 2.2需求2的URL合并问题
 &emsp;&emsp;在需求2中，需要将combiner的参数设置为reducer类，否则reducer无法得到输入数据<word,[URL1,URL2,......]>。  
 &emsp;&emsp;Combiner参数设置理论参考网站：https://zhidao.baidu.com/question/1959117107842078420.html  
 &emsp;&emsp;在设置了combiner参数之后，如果不对合并的URL数进行阈值限定，仍然无法正常运行程序。这个问题可能不是发生URL合并赋值阶段，因为通过try、catch方法并没有出现报错。
+#### 2.3数据集问题发现
+&emsp;&emsp;数据集中“承德露露”一类数据有问题，具体问题是有一行数据中多了一个“\n”符号。将其删除后整个数据集（fulldata.txt或download_data）能够正常运行。
