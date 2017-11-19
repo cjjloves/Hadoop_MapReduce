@@ -204,9 +204,9 @@ job1结果的前五行数据如下（与job相同）  
 ### 1.程序设计说明：
 #### 1.1设计思路：
 &emsp;&emsp;需求2需要完成的子任务包括：截取文本文档每一行数据中的标题部分与URL部分、将标题进行分词、对同一词语相关联的URL值进行合并。  
-&emsp;&emsp;为此，只需要建立一个ob，在该job中，其mapper将读取行数据，通过分隔符\t取得标题段并将标题分词（该过程与需求1中的相同），取最后一段数据作为URL段，并输出<word,URL>对。该job的reducer通过combiner得到输入<word,[URL1,URL2,...]>,将前k(程序固定值)个URL值合并到Text中，最后输出<word,Text>对。
+&emsp;&emsp;为此，只需要建立一个ob，在该job中，其mapper将读取行数据，通过分隔符\t取得标题段并将标题分词（该过程与需求1中的相同），取最后一段数据作为URL段，并输出<word,URL>对。该job的reducer通过combiner得到输入<word,[URL1,URL2,...]>,将所有URL值合并到Text中，最后输出<word,Text>对。
 #### 1.2算法设计及程序说明：
-&emsp;&emsp;在job中，其mapper类先对数据进行分词（分词原理与需求1相同，不再赘述），然后取最后一段为URL值（适应fulldata.txt数据结构），分别对word和URL进行赋值，输出<word,URL>对。reducer类首先设定一个阈值count,对通过默认combiner类得到的输入<word,[URL1,URL2,...]>进行count次循环，每次循环取一个URL值并合并到Text中，每两个URL之间用一个分号进行分隔。最后输出<word,Text>对。  
+&emsp;&emsp;在job中，其mapper类先对数据进行分词（分词原理与需求1相同，不再赘述），然后取最后一段为URL值（适应fulldata.txt数据结构），分别对word和URL进行赋值，输出<word,URL>对。reducer类首先设定一个阈值count,对通过默认combiner类得到的输入<word,[URL1,URL2,...]>进行有限次循环，每次循环取一个URL值并合并到Text中，每两个URL之间用一个分号进行分隔。最后输出<word,Text>对。  
 #### 1.3类说明：
 &emsp;&emsp;TokenizerMapper类：job中的mapper类，输入类型为<IntWritable,Text>,输出类型为<Text,Text>。  
 &emsp;&emsp;IntSumReducer类：job中的combiner类。job中的reducer类，输入类型为<Text,[Text,Text,......]>,输出类型为<Text,Text>。  
@@ -276,13 +276,13 @@ public class Project3 {
 	public void reduce(Text key, Iterable<Text> values, Reducer<Text, Text, Text, Text>.Context context)
 	throws IOException, InterruptedException
 	{
-		int count=0;
+		//int count=0;
 		String fileList = new String();
 		for (Text value : values) {
 			fileList += value.toString() + ";";
 			count++;
-			if(count>=9)
-				break;
+			//if(count>=9)
+				//break;
 		}
 		fileList = fileList.substring(0,fileList.length()-1);
 		result.set(fileList);
@@ -353,7 +353,6 @@ public class Project3 {
 ### 2.程序问题发现  
 #### 2.1需求2的URL合并问题
 &emsp;&emsp;在需求2中，需要将combiner的参数设置为reducer类，否则reducer无法得到输入数据<word,[URL1,URL2,......]>。  
-&emsp;&emsp;Combiner参数设置理论参考网站：https://zhidao.baidu.com/question/1959117107842078420.html  
-&emsp;&emsp;在设置了combiner参数之后，如果不对合并的URL数进行阈值限定，仍然无法正常运行程序。这个问题可能不是发生URL合并赋值阶段，因为通过try、catch方法并没有出现报错。
+&emsp;&emsp;Combiner参数设置理论参考网站：https://zhidao.baidu.com/question/1959117107842078420.html 
 #### 2.2数据集问题发现
 &emsp;&emsp;数据集中“承德露露”一类数据有问题，具体问题是有一行数据中多了一个“\n”符号。将其删除后整个数据集（fulldata.txt或download_data）能够正常运行。
