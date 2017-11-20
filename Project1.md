@@ -315,8 +315,8 @@ public class Project3 {
 }
 ```
 #### 2.2实验结果说明
-&emsp;&emsp;由于设置了阈值count，所以输出<word,URLs>对中最多包含count个URL。  
-假定count值为10，则输出结果前五行数据如下（数据说明：以下输出中的符号在hanlp插件给定词典中均有包括，但在特定停词表没有包括，所以输出的词语中存在特殊符号）
+&emsp;&emsp;由于设置了阈值count，所以输出<word,URLs>对中最多包含count个URL。  
+此处假定只进行了10次循环（即最多合并前10个URL值），则输出结果前五行数据如下（数据说明：以下输出中的符号在hanlp插件给定词典中均有包括，但在特定停词表没有包括，所以输出的词语中存在特殊符号）
 ```
 %-	http://finance.sina.com.cn/stock/t/2017-01-06/doc-ifxzkfvn0640228.shtml;http://finance.sina.com.cn/stock/s/2017-03-13/doc-ifychavf2639718.shtml;http://finance.sina.com.cn/roll/2017-01-10/doc-ifxzkfvn1215778.shtml;http://finance.sina.com.cn/stock/t/2017-07-26/doc-ifyihrwk2551543.shtml;http://finance.sina.com.cn/stock/t/2017-05-24/doc-ifyfkqwe0968988.shtml;http://finance.sina.com.cn/stock/t/2017-06-26/doc-ifyhmpew3498837.shtml;http://finance.sina.com.cn/stock/t/2017-04-05/doc-ifyeayzu6826764.shtml;http://finance.sina.com.cn/stock/t/2017-01-15/doc-ifxzqnva3639896.shtml;http://finance.sina.com.cn/stock/t/2017-07-06/doc-ifyhwefp0187054.shtml
 %--	http://finance.sina.com.cn/stock/t/2017-06-23/doc-ifyhmtrw3753415.shtml;http://finance.sina.com.cn/stock/t/2017-07-06/doc-ifyhweua4140597.shtml;http://finance.sina.com.cn/roll/2016-09-26/doc-ifxwermp3935274.shtml
