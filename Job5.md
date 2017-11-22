@@ -34,7 +34,7 @@ public class TDKmeansDriver {
 	}
 	public void clusterCenterJob() throws IOException, InterruptedException, ClassNotFoundException{
 		for(int i = 0;i < iterationNum; i++){
-			Job clusterCenterJob = new Job();
+			Job clusterCenterJob = Job.getInstance();
 			clusterCenterJob .setJobName("clusterCenterJob" + i);
 			clusterCenterJob .setJarByClass(clusters.class);
 			clusterCenterJob.getConfiguration().setInt("kvalue", k);
@@ -53,7 +53,7 @@ public class TDKmeansDriver {
 		}
 	}
 	public void KMeansClusterJod() throws IOException, InterruptedException, ClassNotFoundException{
-		Job kMeansClusterJob = new Job();
+		Job clusterCenterJob = Job.getInstance();
 		kMeansClusterJob.setJobName("KMeansClusterJob");
 		kMeansClusterJob.setJarByClass(kmeanscluster.class);
 		
