@@ -1,21 +1,21 @@
 # 作业5
-## 1.程序设计说明
-### 1.1键盘输出变量说明
+## 1 程序设计说明
+### 1.1 键盘输出变量说明
 &emsp;&emsp;k:簇个数  
 &emsp;&emsp;iterationNum：迭代次数  
 &emsp;&emsp;sourcePath：散点数据所在路径  
 &emsp;&emsp;outputPath：簇属性及散点所属簇数据所在路径  
 &emsp;&emsp;row：散点个数
-### 1.2程序类说明
+### 1.2 程序类说明
 &emsp;&emsp;TDKmeansDriver：主函数所在类，用于调用其他类  
 &emsp;&emsp;cresample：随机生成散点数据类。该类从TDKmeansDriver中获取散点生成路径和散点个数变量，利用Random().nextInt()函数产生随机散点  
 &emsp;&emsp;Generator：随机生成簇类。该类从TDKmeansDriver中获得散点生成路径、簇生成路径、簇个数和散点个数变量，利用Random().nextInt()函数为每一个散点赋值，取有最大的前簇个数值的散点作为初始簇  
 &emsp;&emsp;clusters：簇迭代类。该类从TDKmeansDriver中获得簇生成路径、散点数据所在路径、簇个数和散点个数变量，map阶段计算散点到每个簇的距离，返回距离最近的簇的ID；reduce阶段加权平均计算新簇的属性  
 &emsp;&emsp;kmeanscluster：生成散点所属簇类。该类与clusers相似，但输出的是每一个散点的属性即其所属的簇
-### 1.3数据可视化说明
+### 1.3 数据可视化说明
 &emsp;&emsp;将最终的的数据导入RStudio中利用R语言实现数据可视化
-## 2.代码
-### 2.1TDKmeansDriver
+## 2 代码
+### 2.1 TDKmeansDriver
 ```
 public class TDKmeansDriver {
 
@@ -110,7 +110,7 @@ public class TDKmeansDriver {
 	
 }
 ```
-### 2.2cresample
+### 2.2 cresample
 ```
 public class cresample {
 	public cresample(String path, int row) throws IOException{
@@ -142,7 +142,7 @@ public class cresample {
 }
 
 ```
-### 2.3Generator
+### 2.3 Generator
 ```
 public class Generator {
 	public Generator(String filePath1,String filePath2,int k,int row) throws NumberFormatException, IOException{
@@ -217,7 +217,7 @@ public class Generator {
 }
 	
 ```
-### 2.4clusters
+### 2.4 clusters
 ```
 public class clusters {
 	public static int k;
@@ -319,7 +319,7 @@ public class clusters {
 	
 }
 ```
-### 2.5kmeanscluster
+### 2.5 kmeanscluster
 ```
 public class kmeanscluster {
 	
@@ -389,7 +389,7 @@ public class kmeanscluster {
 	}
 }
 ```
-### 2.6RStudio实现数据可视化
+### 2.6 RStudio实现数据可视化
 ```
 print(getwd())//得到RStudio运行目录
 data <- read.table("part-m-00000")
@@ -398,7 +398,7 @@ y=data$V2
 color=data$V3
 plot(x,y,col=color)
 ```
-## 3.结果展示
+## 3 结果展示
 ### 假定散点个数为100，簇个数为5
 ### 3.1 随机散点数据（前5行）
 ```
@@ -443,5 +443,5 @@ plot(x,y,col=color)
 ## 4.1 本代码与参考代码的异同
 &emsp;&emsp;本代码增加了随机散点生成类  
 &emsp;&emsp;在选取初始簇方面，本代码对每一个散点赋予一个随机数，取随机数较大的前k个作为初始簇，复杂度为O（簇个数乘以散点个数）；参考代码先取前k个散点作为默认簇，在对后面的第i个散点取一个从0到i-1的随机数，若该随机数为0，则保留该散点并对该散点再取一个从0到簇个数-1的随机数以确定代替的原始簇，复杂度为O（2乘以散点个数）  
-&emsp;&emsp;在读取簇信息方面，本代码用一个列为2的二维数组保存簇信息；参考代码则是用一个ArrayList<Cluster>类来保存。参考代码这种方法适用于多维数据，而本代码只适用于二维数据  
+&emsp;&emsp;在读取簇信息方面，本代码用一个列为2的二维数组保存簇信息；参考代码则是用一个ArrayList<Cluster>类来保存。参考代码这种方法适用于多维数据，而本代码只适用于二维数据  
 &emsp;&emsp;mapreduce阶段处理过程基本相同，只是最后的输出结果形式不同，本代码的输出结果为“散点x值\t散点y值\t散点所属类id”,输出结果服务于数据可视化
