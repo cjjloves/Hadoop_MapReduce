@@ -438,7 +438,7 @@ plot(x,y,col=color)
 1	30	1
 ```
 ### 3.5 散点可视化
-![Image text](https://raw.github.com/cjjloves/hello-world/master/picture/Rplot.png)
+![Image text](https://raw.github.com/cjjloves/hello-world/master/picture/visualization.png)
 # 4 补充
 ## 4.1 本代码与参考代码的异同
 &emsp;&emsp;本代码增加了随机散点生成类  
